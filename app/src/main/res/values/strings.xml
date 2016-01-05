@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">RawrList+</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_note">Add Note</string>
+    <string name="note_filler">Add a note here.</string>
+    <string name="save_note">Save Note</string>
+</resources>
