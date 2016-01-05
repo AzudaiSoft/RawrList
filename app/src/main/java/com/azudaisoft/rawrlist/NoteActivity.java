@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -20,6 +19,7 @@ public class NoteActivity extends AppCompatActivity {
     private Button mSaveButton;
     private EditText mEditText;
     private String mNoteValue;
+    private String mItemId;
     private String mSaveToast = "Note saved!";
     private static NoteSQLDbHelper mNoteSQLDbHelper;
 
@@ -31,21 +31,36 @@ public class NoteActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         Intent intent = getIntent();
-        String listItemValue = intent.getExtras().getString("valueOfListItem"); //Value of the list item, passed from the main activity :D
-        Log.v(TAG, listItemValue);
         mEditText = (EditText) findViewById(R.id.note_text);
         if (intent.hasExtra("valueOfListItem")) {
+            String listItemValue = intent.getExtras().getString("valueOfListItem"); //Value of the list item, passed from the main activity :D
+            mItemId = intent.getExtras().getString("valueOfRowId"); //Value of the ID in the database
             mEditText.append(listItemValue);
         }
+//        if (intent.hasExtra("valueOfRowId")) {
+//            updateDatabase();
+//        } else {
+//            mDatabaseUpdated = false;
+//        }
 
         mSaveButton = (Button) findViewById(R.id.save_button);
 
-        mSaveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                writeToDatabase();
-            }
-        });
+        if (!intent.hasExtra("valueOfRowId")) {
+            mSaveButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    writeToDatabase();
+                }
+            });
+        } else {
+            mSaveButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    updateDatabase();
+                }
+            });
+
+        }
     }
 
     public void writeToDatabase() {
@@ -72,29 +87,19 @@ public class NoteActivity extends AppCompatActivity {
             Toast.makeText(this, "Note cannot be empty!", Toast.LENGTH_SHORT).show();
         }
     }
-//    public void readFromDatabase() {
-//        SQLiteDatabase db = mNoteSQLDbHelper.getReadableDatabase();
-//
-//        String[] projection = {
-//                NoteReaderContract.NoteEntry._ID,
-//                NoteReaderContract.NoteEntry.COLUMN_NOTE_VALUE,
-//
-//        };
-//
-//        String sortOrder =
-//                NoteReaderContract.NoteEntry.COLUMN_NOTE_VALUE + " ASC";
-//
-//        Cursor c = db.query(
-//                NoteReaderContract.NoteEntry.TABLE_NAME,
-//                projection,
-//                null,
-//                null,
-//                null,
-//                null,
-//                sortOrder
-//        );
-//        c.moveToFirst();
-//        Log.v(TAG, c.getString(c.getColumnIndex("entryid")));
-//    }
+    public void updateDatabase() {
+        mNoteValue = mEditText.getText().toString();
+        if (!TextUtils.isEmpty(mNoteValue)) {
+            mNoteSQLDbHelper = new NoteSQLDbHelper(this);
+            SQLiteDatabase db = mNoteSQLDbHelper.getWritableDatabase();
+            mEditText = (EditText) findViewById(R.id.note_text);
+            ContentValues cv = new ContentValues();
+            cv.put(NoteReaderContract.NoteEntry.COLUMN_NOTE_VALUE, mNoteValue);
+            db.update("entry", cv, "_id=" + mItemId, null);
+            Toast.makeText(getApplicationContext(), mSaveToast, Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Note cannot be empty!", Toast.LENGTH_SHORT).show();
+        }
+    }
 
 }

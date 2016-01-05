@@ -44,10 +44,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor itemClickedCursor = (Cursor) mListView.getItemAtPosition(position);
+                String itemId = itemClickedCursor.getString(itemClickedCursor.getColumnIndex("_id"));
                 String itemValue = itemClickedCursor.getString(1);
                 Log.v(TAG, itemValue);
                 Intent i = new Intent(getApplicationContext(), NoteActivity.class);
                 i.putExtra("valueOfListItem", itemValue);
+                i.putExtra("valueOfRowId", itemId);
                 startActivity(i);
 
 
