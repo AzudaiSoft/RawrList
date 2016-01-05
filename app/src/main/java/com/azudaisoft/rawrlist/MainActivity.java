@@ -6,8 +6,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
@@ -37,8 +40,20 @@ public class MainActivity extends AppCompatActivity {
                 new int[] {R.id.text1});
 
         mListView.setAdapter(noteAdapter);
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Cursor itemClickedCursor = (Cursor) mListView.getItemAtPosition(position);
+                String itemValue = itemClickedCursor.getString(1);
+                Log.v(TAG, itemValue);
+                Intent i = new Intent(getApplicationContext(), NoteActivity.class);
+                i.putExtra("valueOfListItem", itemValue);
+                startActivity(i);
 
 
+            }
+
+        });
     }
 
     @Override
