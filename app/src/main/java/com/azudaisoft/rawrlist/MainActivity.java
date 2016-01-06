@@ -4,9 +4,10 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,7 +18,10 @@ import android.widget.SimpleCursorAdapter;
 public class MainActivity extends AppCompatActivity {
 
     private ListView mListView;
+    private FloatingActionButton mFloatingActionButton;
     private Cursor mNoteCursor;
+    private String mItemId;
+    private NoteSQLDbHelper mNoteSQLDbHelper;
     private static final String TAG = "MainActivity";
 
     @Override
@@ -26,6 +30,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        mFloatingActionButton = (FloatingActionButton) findViewById(R.id.fab);
+
+        mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addNote();
+            }
+        });
 
         NoteSQLDbHelper helper = new NoteSQLDbHelper(this);
         SQLiteDatabase db = helper.getReadableDatabase();
@@ -46,7 +59,6 @@ public class MainActivity extends AppCompatActivity {
                 Cursor itemClickedCursor = (Cursor) mListView.getItemAtPosition(position);
                 String itemId = itemClickedCursor.getString(itemClickedCursor.getColumnIndex("_id"));
                 String itemValue = itemClickedCursor.getString(1);
-                Log.v(TAG, itemValue);
                 Intent i = new Intent(getApplicationContext(), NoteActivity.class);
                 i.putExtra("valueOfListItem", itemValue);
                 i.putExtra("valueOfRowId", itemId);
@@ -54,8 +66,21 @@ public class MainActivity extends AppCompatActivity {
 
 
             }
-
         });
+        mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+                    public boolean onItemLongClick(AdapterView<?> arg0, View v, int arg2, long arg3) {
+                        Cursor itemLongClickedCursor = (Cursor) mListView.getItemAtPosition(arg2);
+                        mItemId = itemLongClickedCursor.getString(itemLongClickedCursor.getColumnIndex("_id")); //This is the ID in the database of the long clicked item
+//                        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+//                        SharedPreferences.Editor editor = preferences.edit();
+//                        editor.putString("valueOfLongClickedItem", itemId).commit();
+
+                        MainActivity.this.startActionMode(new ActionBarCallback());
+                        return true;
+            }
+        });
+
     }
 
     @Override
@@ -77,10 +102,6 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
 
-        if (id == R.id.add_button) {
-            addNote();
-        }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -95,5 +116,36 @@ public class MainActivity extends AppCompatActivity {
 
         startActivity(i);
 
+    }
+    class ActionBarCallback implements ActionMode.Callback {
+
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            mode.getMenuInflater().inflate(R.menu.contextual_menu, menu);
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return true;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.delete_note:
+                    mNoteSQLDbHelper = new NoteSQLDbHelper(getApplicationContext());
+                    SQLiteDatabase db = mNoteSQLDbHelper.getWritableDatabase();
+                    db.delete("entry", "_id=" + mItemId, null);
+                    mNoteCursor.requery();
+                    mode.finish();
+                    break;
+            }
+            return true;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+        }
     }
 }

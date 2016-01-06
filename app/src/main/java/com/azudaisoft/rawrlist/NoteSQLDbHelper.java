@@ -4,8 +4,6 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import java.sql.SQLException;
-
 /**
  * Created by Cody on 1/4/16.
  */
@@ -27,8 +25,5 @@ public class NoteSQLDbHelper extends SQLiteOpenHelper {
     }
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-    }
-    public void open() throws SQLException {
-        SQLiteDatabase database = getWritableDatabase();
     }
 }

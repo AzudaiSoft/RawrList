@@ -37,11 +37,6 @@ public class NoteActivity extends AppCompatActivity {
             mItemId = intent.getExtras().getString("valueOfRowId"); //Value of the ID in the database
             mEditText.append(listItemValue);
         }
-//        if (intent.hasExtra("valueOfRowId")) {
-//            updateDatabase();
-//        } else {
-//            mDatabaseUpdated = false;
-//        }
 
         mSaveButton = (Button) findViewById(R.id.save_button);
 
@@ -83,6 +78,8 @@ public class NoteActivity extends AppCompatActivity {
             );
             db.close();
             Toast.makeText(getApplicationContext(), mSaveToast, Toast.LENGTH_SHORT).show();
+            Intent i = new Intent(this, MainActivity.class);
+            startActivity(i);
         } else {
             Toast.makeText(this, "Note cannot be empty!", Toast.LENGTH_SHORT).show();
         }
@@ -97,6 +94,8 @@ public class NoteActivity extends AppCompatActivity {
             cv.put(NoteReaderContract.NoteEntry.COLUMN_NOTE_VALUE, mNoteValue);
             db.update("entry", cv, "_id=" + mItemId, null);
             Toast.makeText(getApplicationContext(), mSaveToast, Toast.LENGTH_SHORT).show();
+            Intent i = new Intent(this, MainActivity.class);
+            startActivity(i);
         } else {
             Toast.makeText(this, "Note cannot be empty!", Toast.LENGTH_SHORT).show();
         }
